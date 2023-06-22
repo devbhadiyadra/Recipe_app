@@ -16,7 +16,7 @@
     /* grid-template-columns: 1fr; */
     justify-content: space-around;
     align-items: flex-start;
-  
+    margin-top: 25px;
   }
   
   .card-container img {
@@ -109,4 +109,11 @@
     width: 80%;
     z-index: -1;
   }
+  
+  /* read more btn for show step,ingridients and cooking time of a recipe */
+  .readmore{
+    margin-left:250px;
+    margin-top: 10px;
+  }
+
   

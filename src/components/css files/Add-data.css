@@ -1,8 +1,9 @@
 .header{
-    background-color: rgba(166, 109, 220, 0.609);
+
     width: 100%;
-    margin-top: 10px;
+    margin-top: 25px;
     height:55px;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     align-content: center;
   }
   .form-container {
@@ -10,10 +11,10 @@
     margin: 0 auto;
     padding:20px;
     margin-top:60px;
-    background-color: rgba(94, 139, 199, 0.623);
+    background-color:black;
     border-radius: 20px;
     /* box-shadow: 32px 34px 10px 1px rgba(37, 163, 183, 0.54); */
-    outline: 7px double #000;
+    /* outline: 7px double #000; */
   outline-offset: 11px;
   }
   
@@ -21,7 +22,7 @@
     display: block;
     margin-bottom: 3px;
     margin-top: 10px;
-    color:black;
+    color:white;
     font-weight: 500;
     font-size: 20px;
   }
@@ -61,4 +62,32 @@
   align-items: center;
    margin-left: 1030px;
   margin-top:-250px 
+}
+
+.ingridients{
+
+}
+
+
+/* add button for ingridients */
+.addbtn{
+
+  background-color: #0b141a;
+ 
+}
+
+.twoarrows{
+  margin-top: 20px;
+}
+
+.ingidients{
+  width: 30%;
+}
+
+.measurement{
+  margin-left: 250px;
+  width:30%;
+  /* background-color: white; */
+  margin-top: -102px;
+
 }

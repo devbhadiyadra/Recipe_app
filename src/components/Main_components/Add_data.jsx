@@ -6,9 +6,14 @@ import { useNavigate } from "react-router-dom";
 import { FadeLoader } from "react-spinners";
 import { Alert } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft,
+  faArrowRight,
+  faPlus,
+} from "@fortawesome/free-solid-svg-icons";
 
-const Add_data = ({ isEnabled }) => {
+// BASIC DATA
+const Add_data = () => {
   const [data, setData] = useState({
     recipename: "",
     category: {
@@ -20,26 +25,49 @@ const Add_data = ({ isEnabled }) => {
       drinks: "drinks",
       baking: "baking",
     },
-    ingredients: "",
     cookingtime: "",
-    Measurement: "",
-    recipetags: "",
-    Nutritionalingridients: "",
-    description: "",
-    image: "",
+    // recipetags: "",
+    // Nutritionalingridients: "",
+    // description: "",
+    // image: "",
   });
+
+  // CATEGORY SELECTION
   const [selectedValue, setSelectedValue] = useState("");
+
+  // FORM ROUTE
   const [form1, Setform1] = useState(true);
   const [form2, Setform2] = useState(false);
   const [form3, Setform3] = useState(false);
-  // const [mainform, Setmain] = useState(true);
+
+  // LOADER
   const [isLoading, setIsLoading] = useState(false);
+
+  // SUCCESSFULLY DATA ADDED MESSAGE
   const [data_added, setdata_added] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
+
+  // IMAGE 
+  // const [selectedImage, setSelectedImage] = useState(null);
+
+  // MY CODE
+  //   const[ingridient,setIngridient]=useState([{
+  //     name:"",
+  //     measurement:""
+  // }])
+  //   const[items,setItems]=useState([])
+
+  // INGRIDIENTS LIST
+  const [items, setItems] = useState([]);
+
+  // RECIPE STEPS
+  const [steps, setSteps] = useState([]);
+
   var navigate = useNavigate();
+
   //var ingredientsArray;
   const get_data_teaxtbox = (e, field) => {
     var value = e.target.value;
+
     // dropdown memu seleted value stored
     setSelectedValue(value);
     setData({ ...data, [field]: value });
@@ -59,16 +87,16 @@ const Add_data = ({ isEnabled }) => {
         position: toast.POSITION.BOTTOM_CENTER,
       });
     }
-    if (data.recipetags === "") {
-      Setform1(true);
-      toast.error("please enter recipe tag name", {
-        position: toast.POSITION.BOTTOM_CENTER,
-      });
-    }
+    // if (data.recipetags === "") {
+    //   Setform1(true);
+    //   toast.error("please enter recipe tag name", {
+    //     position: toast.POSITION.BOTTOM_CENTER,
+    //   });
+    // }
     if (
       data.recipename !== "" &&
-      data.category !== "" &&
-      data.recipetags !== ""
+      data.category !== ""
+      // data.recipetags !== ""
     ) {
       Setform1(false);
       Setform2(true);
@@ -77,27 +105,27 @@ const Add_data = ({ isEnabled }) => {
 
   const form2_handler = (e) => {
     e.preventDefault();
-    if (data.ingredients === "") {
+    if (items.name === "") {
       Setform2(true);
       toast.error("please enter ingredients name", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
     }
-    if (data.cookingtime === "") {
-      Setform2(true);
-      toast.error("please enter cooking time", {
-        position: toast.POSITION.BOTTOM_CENTER,
-      });
-    }
-    if (data.Measurement === "") {
+    // if (data.cookingtime === "") {
+    //   Setform2(true);
+    //   toast.error("please enter cooking time", {
+    //     position: toast.POSITION.BOTTOM_CENTER,
+    //   });
+    // }
+    if (items.Measurement === "") {
       Setform2(true);
       toast.error("please enter measurement", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
     } else if (
-      data.ingredients !== "" &&
-      data.cookingtime !== "" &&
-      data.Measurement !== ""
+      items.name !== "" &&
+      // data.cookingtime !== "" &&
+      items.Measurement !== ""
     ) {
       Setform2(false);
       Setform3(true);
@@ -107,25 +135,28 @@ const Add_data = ({ isEnabled }) => {
   //Function for all data sent to the backend(server)
   const send_data_server = (e) => {
     e.preventDefault();
-
+    console.log("items", items);
     // show data in the console just for check
-    console.log(data);
+    console.log("recipe basic data :", data);
+    console.log("recipe steps : ", steps);
     // only ingridient array
     // ingredientsArray = data.ingredients.split("\n");
     // console.log("ingedients array : ", ingredientsArray);
 
-    if (data.Nutritionalingridients === "") {
-      Setform3(true);
-      toast.error("please enter Nutritionalingridients", {
-        position: toast.POSITION.BOTTOM_CENTER,
-      });
-    }
-    if (data.description === "") {
-      Setform3(true);
-      toast.error("please enter recipe steps", {
-        position: toast.POSITION.BOTTOM_CENTER,
-      });
-    } else if (data.Nutritionalingridients !== "" && data.description !== "") {
+    // if (data.Nutritionalingridients === "") {
+    //   Setform3(true);
+    //   setData({ ...data.ingredients, items });
+    //   toast.error("please enter Nutritionalingridients", {
+    //     position: toast.POSITION.BOTTOM_CENTER,
+    //   });
+    // }
+    // if (data.description === "") {
+    //   Setform3(true);
+    //   toast.error("please enter recipe steps", {
+    //     position: toast.POSITION.BOTTOM_CENTER,
+    //   });
+    // }
+    if (steps.step !== "") {
       // for loader
       setIsLoading(true);
       setTimeout(() => {
@@ -133,6 +164,7 @@ const Add_data = ({ isEnabled }) => {
         setIsLoading(false);
         // API axios/simple fetch method
 
+        
         // msg shown on screen when succesfully recipe added
         setdata_added(true);
       }, 3000);
@@ -145,16 +177,51 @@ const Add_data = ({ isEnabled }) => {
   };
 
   // image handler
-  const handleImageChange = (event,field) => {
-    const file = event.target.files[0];
-    const reader = new FileReader()
-    reader.onload = () => {
-      setSelectedImage(reader.result);
+  // const handleImageChange = (event, field) => {
+  //   const file = event.target.files[0];
+  //   const reader = new FileReader();
+  //   reader.onload = () => {
+  //     setSelectedImage(reader.result);
+  //   };
+  //   reader.readAsDataURL(file);
+  //   // only name weite "file.name"
+  //   setData({ ...data, [field]: file });
+  // };
+
+  //code for ingridients
+  const handleAddItem = (e) => {
+    e.preventDefault();
+    const newItem = {
+      name: "",
+      measurement: "",
     };
-    reader.readAsDataURL(file);
-    setData({ ...data, [field]: file.name });
+    setItems([...items, newItem]);
   };
 
+  const handleItemChange = (index, event) => {
+    event.preventDefault();
+    const updatedItems = [...items];
+    updatedItems[index][event.target.name] = event.target.value;
+    setItems(updatedItems);
+    // console.log(index)
+    //  console.log("this is :",items)
+  };
+
+  // code for recipe steps/description
+  const handleAddStep = (e) => {
+    e.preventDefault();
+    const newStep = {
+      step: "",
+    };
+    setSteps([...steps, newStep]);
+  };
+
+  const handleStepChange = (index, event) => {
+    event.preventDefault();
+    const updatedSteps = [...steps];
+    updatedSteps[index][event.target.name] = event.target.value;
+    setSteps(updatedSteps);
+  };
 
   return (
     <>
@@ -166,7 +233,6 @@ const Add_data = ({ isEnabled }) => {
         </div>
         <div className="form-container">
           <form>
-
             {/* form-1 */}
             {form1 && (
               <div>
@@ -178,7 +244,7 @@ const Add_data = ({ isEnabled }) => {
                   onChange={(e) => get_data_teaxtbox(e, "recipename")}
                   required
                 />
-
+                {/* 
                 <label htmlFor="recipe-tags">Recipe Tags:</label>
                 <input
                   type="text"
@@ -186,7 +252,17 @@ const Add_data = ({ isEnabled }) => {
                   name="recipetags"
                   value={data.recipetags}
                   onChange={(e) => get_data_teaxtbox(e, "recipetags")}
+                /> */}
+
+                <label htmlFor="cooking-time">Cooking Time:</label>
+                <input
+                  type="text"
+                  id="cooking-time"
+                  name="cookingtime"
+                  value={data.cookingtime}
+                  onChange={(e) => get_data_teaxtbox(e, "cookingtime")}
                 />
+
                 <label htmlFor="category">Category:</label>
                 <select
                   id="category"
@@ -209,21 +285,25 @@ const Add_data = ({ isEnabled }) => {
                 </select>
 
                 {/* image uploader */}
-                <div>
+                {/* <div>
                   <form>
                     <input
                       type="file"
-                      onChange={(e)=>handleImageChange(e,"image")}
+                      onChange={(e) => handleImageChange(e, "image")}
                       accept="image/*"
                     />
                     {selectedImage && (
                       <div>
                         <h3>Preview:</h3>
-                        <img src={selectedImage} alt="Selected" style={{width:"660px"}} />
+                        <img
+                          src={selectedImage}
+                          alt="Selected"
+                          style={{ width: "660px" }}
+                        />
                       </div>
                     )}
                   </form>
-                </div>
+                </div> */}
 
                 <button
                   className="btn "
@@ -236,7 +316,7 @@ const Add_data = ({ isEnabled }) => {
                   <FontAwesomeIcon
                     icon={faArrowRight}
                     size="2xl"
-                    style={{ color: "#286827" }}
+                    style={{ color: "#ea168a" }}
                   />
                 </button>
               </div>
@@ -245,62 +325,75 @@ const Add_data = ({ isEnabled }) => {
             {/* form-2 */}
             {form2 && (
               <div>
-                <label htmlFor="ingredients">Ingredients:</label>
-                {/* {data.ingredients.split("\n").map((ingredient, index) => ( */}
-                <textarea
-                  // key={index}
-                  type="text"
-                  // id={`ingredients-${index}`}
-                  // name={index}
-                  value={data.ingredients}
-                  style={{ width: "100%" }}
-                  onChange={(e) => get_data_teaxtbox(e, "ingredients")}
-                  required
-                />
-                <label htmlFor="cooking-time">Cooking Time:</label>
-                <input
-                  type="text"
-                  id="cooking-time"
-                  name="cookingtime"
-                  value={data.cookingtime}
-                  onChange={(e) => get_data_teaxtbox(e, "cookingtime")}
-                />
-                <label htmlFor="Measurement">Measurement:</label>
-                <input
-                  type="text"
-                  id="Measurement"
-                  name="Measurement"
-                  value={data.Measurement}
-                  onChange={(e) => get_data_teaxtbox(e, "Measurement")}
-                />
-                <button
-                  className="privious_btn btn "
-                  onClick={() => {
-                    Setform1(true);
-                    Setform2(false);
-                  }}
-                >
-                  <FontAwesomeIcon
-                    icon={faArrowLeft}
-                    size="2xl"
-                    style={{ color: "#833434" }}
-                  />
-                </button>
-                <button className="next_btn btn " onClick={form2_handler}>
-                  <FontAwesomeIcon
-                    icon={faArrowRight}
-                    size="2xl"
-                    style={{ color: "#286827" }}
-                  />
-                </button>
+                
+                {items.map((item, index) => (
+                  
+                  <div key={index}>
+                    <div className="ingidients">
+                      <p style={{ color: "white" }}>Ingridient : {index + 1}</p>
+                      <input
+                        type="text"
+                        name="name"
+                        value={item.name}
+                        onChange={(event) => handleItemChange(index, event)}
+                      />
+                    </div>
+                    <div className="measurement">
+                      <p style={{ color: "white" }}>
+                        measurement : {index + 1}
+                      </p>
+                      <input
+                        type="text"
+                        name="measurement"
+                        value={item.measurement}
+                        onChange={(event) => handleItemChange(index, event)}
+                      />
+                    </div>
+                  </div>  
+                ))}
+                
+                <center>
+                <div className="addbtn">
+                  <button className="btn" onClick={handleAddItem}>
+                    <FontAwesomeIcon
+                      icon={faPlus}
+                      size="2xl"
+                      style={{ color: "#ea168a" }}
+                    />
+                  </button>
+                </div>
+
+                </center>
+                <div className="twoarrows">
+                  <button
+                    className="privious_btn btn "
+                    onClick={() => {
+                      Setform1(true);
+                      Setform2(false);
+                    }}
+                  >
+                    <FontAwesomeIcon
+                      icon={faArrowLeft}
+                      size="2xl"
+                      style={{ color: "#ea168a" }}
+                    />
+                  </button>
+                  <button className="next_btn btn " onClick={form2_handler}>
+                    <FontAwesomeIcon
+                      icon={faArrowRight}
+                      size="2xl"
+                      style={{ color: "#ea168a" }}
+                    />
+                  </button>
+                </div>
               </div>
             )}
 
-          {/* form-3 */}
+            {/* form-3 */}
             {form3 && (
               <>
                 <div>
-                  <label
+                  {/* <label
                     htmlFor="Nutritional ingridients"
                     name="Nutritionalingridients"
                   >
@@ -314,20 +407,22 @@ const Add_data = ({ isEnabled }) => {
                     onChange={(e) =>
                       get_data_teaxtbox(e, "Nutritionalingridients")
                     }
-                  />
+                  /> */}
 
-                  <label htmlFor="description" name="description">
-                    Recipe Steps/Process:
-                  </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    rows="10"
-                    style={{ width: "100%" }}
-                    value={data.description}
-                    onChange={(e) => get_data_teaxtbox(e, "description")}
-                  />
+                  {/*CODE DESCRIPION / STEPS*/}
+                  <button onClick={handleAddStep}>Add Step</button>
 
+                  {steps.map((step, index) => (
+                    <div key={index}>
+                      <input
+                        type="text"
+                        name="step"
+                        value={step.description}
+                        onChange={(event) => handleStepChange(index, event)}
+                        placeholder="Step Description"
+                      />
+                    </div>
+                  ))}
                   {/* <button
                       className="privious_btn btn "
                       onClick={() => {
@@ -354,8 +449,11 @@ const Add_data = ({ isEnabled }) => {
         </div>
         ,
         <div style={{ marginLeft: "620px", marginTop: "-330PX" }}>
-          {isLoading ? (<FadeLoader color="blue" loading={true} size={50} />)
-                     : (" ")}
+          {isLoading ? (
+            <FadeLoader color="blue" loading={true} size={50} />
+          ) : (
+            " "
+          )}
         </div>
         ,
         {data_added && (

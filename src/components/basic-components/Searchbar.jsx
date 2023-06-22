@@ -1,14 +1,28 @@
-import React from 'react'
+import React from "react";
 import { MDBCol } from "mdbreact";
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass, faHome } from "@fortawesome/free-solid-svg-icons";
+import '../css files/searchbar.css'
 const Searchbar = () => {
-    const search_handler=(e)=>{
-        alert('click')
-      }
+  const search_handler = (e) => {
+    alert("click");
+  };
   return (
     <>
-        <center>
+    
+    {/* home btn */}
+      <Link to="/">
+        <FontAwesomeIcon
+          icon={faHome}
+          size="xl"
+          style={{ color: "black", marginTop: "25px",marginLeft:"25px" }}
+        />
+      </Link>
+      <center>
+
+      {/* search bar */}
+      <div className="search_container">
         <MDBCol md="6">
           <div className="input-group md-form form-sm form-1 pl-0 ">
             <input
@@ -23,14 +37,16 @@ const Searchbar = () => {
             <FontAwesomeIcon
               icon={faMagnifyingGlass}
               size="xl"
-              style={{ color: "black" ,marginTop:"11px"}}
+              style={{ color: "black", marginTop: "11px" }}
               onClick={search_handler}
             />
           </div>
         </MDBCol>
-      </center> 
-    </>
-  )
-}
+        </div>
+      </center>
 
-export default Searchbar
+    </>
+  );
+};
+
+export default Searchbar;
