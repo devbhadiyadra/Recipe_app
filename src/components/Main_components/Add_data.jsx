@@ -11,7 +11,6 @@ import {
   faArrowRight,
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
-
 // BASIC DATA
 const Add_data = () => {
   const [data, setData] = useState({
@@ -26,7 +25,8 @@ const Add_data = () => {
       baking: "baking",
     },
     cookingtime: "",
-    // recipetags: "",
+    ingredientsList:[],
+    Steps:[]
     // Nutritionalingridients: "",
     // description: "",
     // image: "",
@@ -46,16 +46,6 @@ const Add_data = () => {
   // SUCCESSFULLY DATA ADDED MESSAGE
   const [data_added, setdata_added] = useState(false);
 
-  // IMAGE 
-  // const [selectedImage, setSelectedImage] = useState(null);
-
-  // MY CODE
-  //   const[ingridient,setIngridient]=useState([{
-  //     name:"",
-  //     measurement:""
-  // }])
-  //   const[items,setItems]=useState([])
-
   // INGRIDIENTS LIST
   const [items, setItems] = useState([]);
 
@@ -64,13 +54,15 @@ const Add_data = () => {
 
   var navigate = useNavigate();
 
-  //var ingredientsArray;
+  // IMAGE 
+  // const [selectedImage, setSelectedImage] = useState(null)
+
   const get_data_teaxtbox = (e, field) => {
     var value = e.target.value;
 
     // dropdown memu seleted value stored
     setSelectedValue(value);
-    setData({ ...data, [field]: value });
+    setData((prevState) => ({ ...prevState, [field]: value }));
     // console.log(ingredientsArray)
   };
 
@@ -135,10 +127,11 @@ const Add_data = () => {
   //Function for all data sent to the backend(server)
   const send_data_server = (e) => {
     e.preventDefault();
-    console.log("items", items);
-    // show data in the console just for check
+    // console.log("ingridients", items);
     console.log("recipe basic data :", data);
-    console.log("recipe steps : ", steps);
+    // console.log("recipe steps : ", steps);
+    // console.log("all",allData)
+
     // only ingridient array
     // ingredientsArray = data.ingredients.split("\n");
     // console.log("ingedients array : ", ingredientsArray);
@@ -164,15 +157,15 @@ const Add_data = () => {
         setIsLoading(false);
         // API axios/simple fetch method
 
-        
+
         // msg shown on screen when succesfully recipe added
         setdata_added(true);
       }, 3000);
 
-      // for navigate main page
-      setTimeout(() => {
-        navigate("/");
-      }, 5000);
+      //  for navigate main page
+       setTimeout(() => {
+         navigate("/");
+       }, 5000);
     }
   };
 
@@ -189,13 +182,17 @@ const Add_data = () => {
   // };
 
   //code for ingridients
-  const handleAddItem = (e) => {
+  const handleAddItem = (e,field) => {
     e.preventDefault();
     const newItem = {
       name: "",
       measurement: "",
     };
     setItems([...items, newItem]);
+    setData((prevState) => ({
+      ...prevState,
+      ingredientsList: [...prevState.ingredientsList, newItem],
+    }));
   };
 
   const handleItemChange = (index, event) => {
@@ -203,6 +200,10 @@ const Add_data = () => {
     const updatedItems = [...items];
     updatedItems[index][event.target.name] = event.target.value;
     setItems(updatedItems);
+    setData((prevState) => ({
+      ...prevState,
+      ingredientsList: updatedItems,
+    }));
     // console.log(index)
     //  console.log("this is :",items)
   };
@@ -214,6 +215,10 @@ const Add_data = () => {
       step: "",
     };
     setSteps([...steps, newStep]);
+    setData((prevState) => ({
+      ...prevState,
+      instructions: [...prevState.instructions, newStep],
+    }));
   };
 
   const handleStepChange = (index, event) => {
@@ -221,6 +226,10 @@ const Add_data = () => {
     const updatedSteps = [...steps];
     updatedSteps[index][event.target.name] = event.target.value;
     setSteps(updatedSteps);
+    setData((prevState) => ({
+      ...prevState,
+      instructions: updatedSteps,
+    }));
   };
 
   return (
@@ -275,13 +284,13 @@ const Add_data = () => {
                   <option defaultValue="none" selected hidden>
                     choose category
                   </option>
-                  <option value={data.category.breakfast}>breakfast</option>
-                  <option value={data.category.lunch}>lunch</option>
-                  <option value={data.category.snakes}>snakes</option>
-                  <option value={data.category.lunch}>dinner</option>
-                  <option value={data.category.desert}>desert</option>
-                  <option value={data.category.drinks}>drinks</option>
-                  <option value={data.category.baking}>baking</option>
+                  <option value="breakfast">breakfast</option>
+                  <option value="lunch">lunch</option>
+                  <option value="snakes">snakes</option>
+                  <option value="dinner">dinner</option>
+                  <option value="desert">desert</option>
+                  <option value="drinks">drinks</option>
+                  <option value="baking">baking</option>
                 </select>
 
                 {/* image uploader */}
