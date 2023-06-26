@@ -4,33 +4,46 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { FadeLoader } from "react-spinners";
-import { Alert } from "@mui/material";
+import { Alert, isMuiElement } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faArrowLeft,
-  faArrowRight,
-  faPlus,
+  faCircleArrowLeft,
+  faCircleArrowRight,
+  faCirclePlus,
+  
 } from "@fortawesome/free-solid-svg-icons";
+ import axios from "axios";
+
 // BASIC DATA
 const Add_data = () => {
   const [data, setData] = useState({
-    recipename: "",
-    category: {
-      breakfast: "breakfast",
-      lunch: "lunch",
-      snakes: "snakes",
-      dinner: "dinner",
-      desert: "desert",
-      drinks: "drinks",
-      baking: "baking",
-    },
-    cookingtime: "",
-    ingredientsList:[],
-    Steps:[]
-    // Nutritionalingridients: "",
-    // description: "",
-    // image: "",
+    recipe: {
+      name: "",
+      category: {
+        breakfast: "breakfast",
+        lunch: "lunch",
+        snakes: "snakes",
+        dinner: "dinner",
+        desert: "desert",
+        drinks: "drinks",
+        baking: "baking",
+      },
+      cookingTime: 0,
+      preparationTime: 0,
+      ingredientsList: [],
+      instructions: [],
+      nutrition: {
+        calories: " ",
+        fat: " ",
+        protein: " ",
+        carbohydrates: "  ",
+      },
+      // Nutritionalingridients: "",
+      // description: "",
+      // image: "",
+    }
   });
+  const URL = "http://localhost:8085";
 
   // CATEGORY SELECTION
   const [selectedValue, setSelectedValue] = useState("");
@@ -39,7 +52,7 @@ const Add_data = () => {
   const [form1, Setform1] = useState(true);
   const [form2, Setform2] = useState(false);
   const [form3, Setform3] = useState(false);
-
+  const [form4, Setform4] = useState(false);
   // LOADER
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,46 +62,63 @@ const Add_data = () => {
   // INGRIDIENTS LIST
   const [items, setItems] = useState([]);
 
-  // RECIPE STEPS
-  const [steps, setSteps] = useState([]);
+  // RECIPE instructions
+  const [instructions, setinstructions] = useState([]);
 
   var navigate = useNavigate();
 
-  // IMAGE 
+  // IMAGE
   // const [selectedImage, setSelectedImage] = useState(null)
 
   const get_data_teaxtbox = (e, field) => {
     var value = e.target.value;
-
     // dropdown memu seleted value stored
     setSelectedValue(value);
-    setData((prevState) => ({ ...prevState, [field]: value }));
-    // console.log(ingredientsArray)
+    setData((prevState) => ({
+      ...prevState,
+      recipe: {
+        ...prevState.recipe,
+        [field]: value,
+      },
+    }));
   };
 
   const form1_handler = (e) => {
     e.preventDefault();
 
-    if (data.recipename === "") {
+    if (data.recipe.name === "") {
       toast.error("please enter recipe name", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
+      Setform1(true);
+      Setform2(false);
     }
-    if (data.category === "") {
-      toast.error("please select category", {
-        position: toast.POSITION.BOTTOM_CENTER,
-      });
-    }
-    // if (data.recipetags === "") {
-    //   Setform1(true);
-    //   toast.error("please enter recipe tag name", {
+    // if (data.category === "baking" || "drinks" || "lunch"|| "dinner"||"snakes"||"desert"||"breakfast") {
+    //   toast.error("please select category", {
     //     position: toast.POSITION.BOTTOM_CENTER,
     //   });
+    //   Setform1(true);
+    //   Setform2(false);
     // }
+    if (data.recipe.preparationTime === "") {
+      toast.error("please enter preparation time", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      Setform1(true);
+      Setform2(false);
+    }
+    if (data.recipe.cookingTime === "") {
+      toast.error("please enter cooking time", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      Setform1(true);
+      Setform2(false);
+    }
     if (
-      data.recipename !== "" &&
-      data.category !== ""
-      // data.recipetags !== ""
+      data.recipe.name !== "" &&
+      data.recipe.category !== "" &&
+      data.recipe.preparationTime !== "" &&
+      data.recipe.cookingTime !== ""
     ) {
       Setform1(false);
       Setform2(true);
@@ -97,75 +127,103 @@ const Add_data = () => {
 
   const form2_handler = (e) => {
     e.preventDefault();
-    if (items.name === "") {
+    if (
+      items.length === 0 ||
+      items.some((item) => item.name === "" || item.measurement === "")
+    ) {
       Setform2(true);
-      toast.error("please enter ingredients name", {
+      Setform3(false);
+      toast.error("please ADD ingredients name", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+    } else if (items.name !== "" && items.Measurement !== "") {
+      Setform2(false);
+      Setform3(true);
+    }
+  };
+
+  const form3_handler = (e) => {
+    e.preventDefault();
+    if (data.recipe.nutrition.calories === "") {
+      toast.error("please enter calories", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
     }
-    // if (data.cookingtime === "") {
-    //   Setform2(true);
-    //   toast.error("please enter cooking time", {
-    //     position: toast.POSITION.BOTTOM_CENTER,
-    //   });
-    // }
-    if (items.Measurement === "") {
-      Setform2(true);
-      toast.error("please enter measurement", {
+    if (data.recipe.nutrition.protein === "") {
+      toast.error("please enter protein", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
-    } else if (
-      items.name !== "" &&
-      // data.cookingtime !== "" &&
-      items.Measurement !== ""
+    }
+    if (data.recipe.nutrition.fat === "") {
+      toast.error("please enter fat", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+    }
+    if (data.recipe.nutrition.carbohydrates === "") {
+      toast.error("please enter carbohydrates", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+    }
+
+    if (
+      data.recipe.nutrition.calories !== "" &&
+      data.recipe.nutrition.fat !== "" &&
+      data.recipe.nutrition.protein !== "" &&
+      data.recipe.nutrition.carbohydrates !== ""
     ) {
-      Setform2(false);
-      Setform3(true);
+      Setform3(false);
+      Setform4(true);
     }
   };
 
   //Function for all data sent to the backend(server)
   const send_data_server = (e) => {
     e.preventDefault();
-    // console.log("ingridients", items);
-    console.log("recipe basic data :", data);
-    // console.log("recipe steps : ", steps);
-    // console.log("all",allData)
-
-    // only ingridient array
-    // ingredientsArray = data.ingredients.split("\n");
-    // console.log("ingedients array : ", ingredientsArray);
-
-    // if (data.Nutritionalingridients === "") {
-    //   Setform3(true);
-    //   setData({ ...data.ingredients, items });
-    //   toast.error("please enter Nutritionalingridients", {
-    //     position: toast.POSITION.BOTTOM_CENTER,
-    //   });
-    // }
-    // if (data.description === "") {
-    //   Setform3(true);
-    //   toast.error("please enter recipe steps", {
-    //     position: toast.POSITION.BOTTOM_CENTER,
-    //   });
-    // }
-    if (steps.step !== "") {
+    if (
+      instructions.length === 0 ||
+      instructions.some((instructions) => instructions.instructions === "")
+    ) {
+      toast.error("please ADD recipe steps", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+    } else {
+      data.recipe.instructions.forEach((ins,index)=>{
+        ins.step=index+1
+      })
+      console.log("recipe basic data :", data);
       // for loader
       setIsLoading(true);
       setTimeout(() => {
+        setdata_added(true);
         // for loading disabled
         setIsLoading(false);
+
         // API axios/simple fetch method
 
-
-        // msg shown on screen when succesfully recipe added
-        setdata_added(true);
+         axios.post(URL+"/AddRecipe", data)
+         .then((response) => {
+            // Handle successful response
+           toast.success("Data added", {
+             position: toast.POSITION.BOTTOM_CENTER,
+           });
+           setdata_added(true);
+         })
+         .catch((error) => {
+            // Handle error
+           toast.error("Failed to add data", {
+             position: toast.POSITION.BOTTOM_CENTER,
+           });
+           console.error(error);
+         })
+         .finally(() => {
+           setIsLoading(false);
+         });
       }, 3000);
 
       //  for navigate main page
-       setTimeout(() => {
-         navigate("/");
-       }, 5000);
+      setTimeout(() => {
+        navigate("/");
+      }, 5000);
     }
   };
 
@@ -181,17 +239,20 @@ const Add_data = () => {
   //   setData({ ...data, [field]: file });
   // };
 
-  //code for ingridients
-  const handleAddItem = (e,field) => {
+  // FOR INGRIDIENTS
+  const handleAddItem = (e, field) => {
     e.preventDefault();
     const newItem = {
-      name: "",
+      ingredient: "",
       measurement: "",
     };
     setItems([...items, newItem]);
     setData((prevState) => ({
       ...prevState,
-      ingredientsList: [...prevState.ingredientsList, newItem],
+      recipe: {
+        ...prevState.recipe,
+        ingredientsList: [...prevState.recipe.ingredientsList, newItem],
+      },
     }));
   };
 
@@ -202,74 +263,105 @@ const Add_data = () => {
     setItems(updatedItems);
     setData((prevState) => ({
       ...prevState,
-      ingredientsList: updatedItems,
+      recipe: {
+        ...prevState.recipe,
+        ingredientsList: updatedItems,
+      },
     }));
-    // console.log(index)
-    //  console.log("this is :",items)
   };
 
-  // code for recipe steps/description
+  // FOR NUTRITION DATA STORES IN MAIN STATE
+  const nutrition_handler = (e) => {
+    const { name, value } = e.target;
+    e.preventDefault();
+    // var value = e.target.value;
+    setData((prevData) => ({
+      ...prevData,
+      recipe: {
+        ...prevData.recipe,
+        nutrition: {
+          ...prevData.recipe.nutrition,
+          [name]: value,
+        },
+      },
+    }));
+  };
+
+  // FOR RECIPE instructions
   const handleAddStep = (e) => {
     e.preventDefault();
     const newStep = {
       step: "",
+      instruction: "",
     };
-    setSteps([...steps, newStep]);
+    setinstructions([...instructions, newStep]);
     setData((prevState) => ({
       ...prevState,
-      instructions: [...prevState.instructions, newStep],
+      recipe: {
+        ...prevState.recipe,
+        instructions: [...prevState.recipe.instructions, newStep],
+      },
     }));
   };
 
   const handleStepChange = (index, event) => {
     event.preventDefault();
-    const updatedSteps = [...steps];
-    updatedSteps[index][event.target.name] = event.target.value;
-    setSteps(updatedSteps);
+
+    const updatedinstructions = [...instructions];  
+    updatedinstructions[index][event.target.name] = event.target.value;
+    setinstructions(updatedinstructions);
     setData((prevState) => ({
       ...prevState,
-      instructions: updatedSteps,
+      recipe: {
+        ...prevState.recipe,
+        instructions: updatedinstructions,
+      },
     }));
   };
 
   return (
     <>
       <form>
-        <div className="header">
+        {/* <div className="header">
           <h1>
             <center>Get recipe information</center>
           </h1>
-        </div>
+        </div> */}
         <div className="form-container">
           <form>
             {/* form-1 */}
             {form1 && (
               <div>
+                <div className="form_header">
+                  <center>
+                    <h3>RECIPE BASIC INFORMATION</h3>
+                  </center>
+                </div>
                 <label htmlFor="recipe-name">Recipe Name:</label>
                 <input
                   type="text"
                   id="recipe-name"
-                  value={data.recipename}
-                  onChange={(e) => get_data_teaxtbox(e, "recipename")}
+                  value={data.recipe.name}
+                  onChange={(e) => get_data_teaxtbox(e, "name")}
                   required
                 />
-                {/* 
-                <label htmlFor="recipe-tags">Recipe Tags:</label>
-                <input
-                  type="text"
-                  id="recipe-tags"
-                  name="recipetags"
-                  value={data.recipetags}
-                  onChange={(e) => get_data_teaxtbox(e, "recipetags")}
-                /> */}
 
-                <label htmlFor="cooking-time">Cooking Time:</label>
+                <label htmlFor="preparation-time">Cooking Time:</label>
                 <input
                   type="text"
                   id="cooking-time"
-                  name="cookingtime"
-                  value={data.cookingtime}
-                  onChange={(e) => get_data_teaxtbox(e, "cookingtime")}
+                  name="cookingTime"
+                  value={data.recipe.cookingTime}
+                  onChange={(e) => get_data_teaxtbox(e, "cookingTime")}
+                />
+
+                <label htmlFor="preparation-time">Preparation Time:</label>
+                <input
+                  type="text"
+                  id="preparation-time"
+                  name="preparationTime"
+                  value={data.recipe.preparationTime}
+                  onChange={(e) => get_data_teaxtbox(e, "preparationTime")}
                 />
 
                 <label htmlFor="category">Category:</label>
@@ -323,7 +415,7 @@ const Add_data = () => {
                   }}
                 >
                   <FontAwesomeIcon
-                    icon={faArrowRight}
+                    icon={faCircleArrowRight}
                     size="2xl"
                     style={{ color: "#ea168a" }}
                   />
@@ -334,16 +426,19 @@ const Add_data = () => {
             {/* form-2 */}
             {form2 && (
               <div>
-                
+                <center>
+                  <div className="form_header">
+                    <h3>ADD INGRIDIENTS</h3>
+                  </div>
+                </center>
                 {items.map((item, index) => (
-                  
                   <div key={index}>
                     <div className="ingidients">
                       <p style={{ color: "white" }}>Ingridient : {index + 1}</p>
                       <input
                         type="text"
-                        name="name"
-                        value={item.name}
+                        name="ingredient"
+                        // value={item.name}
                         onChange={(event) => handleItemChange(index, event)}
                       />
                     </div>
@@ -354,24 +449,23 @@ const Add_data = () => {
                       <input
                         type="text"
                         name="measurement"
-                        value={item.measurement}
+                        // value={item.measurement}
                         onChange={(event) => handleItemChange(index, event)}
                       />
                     </div>
-                  </div>  
+                  </div>
                 ))}
-                
-                <center>
-                <div className="addbtn">
-                  <button className="btn" onClick={handleAddItem}>
-                    <FontAwesomeIcon
-                      icon={faPlus}
-                      size="2xl"
-                      style={{ color: "#ea168a" }}
-                    />
-                  </button>
-                </div>
 
+                <center>
+                  <div className="addbtn">
+                    <button className="btn" onClick={handleAddItem}>
+                      <FontAwesomeIcon
+                        icon={faCirclePlus}
+                        size="2xl"
+                        style={{ color: "#ea168a" }}
+                      />
+                    </button>
+                  </div>
                 </center>
                 <div className="twoarrows">
                   <button
@@ -382,14 +476,14 @@ const Add_data = () => {
                     }}
                   >
                     <FontAwesomeIcon
-                      icon={faArrowLeft}
+                      icon={faCircleArrowLeft}
                       size="2xl"
                       style={{ color: "#ea168a" }}
                     />
                   </button>
                   <button className="next_btn btn " onClick={form2_handler}>
                     <FontAwesomeIcon
-                      icon={faArrowRight}
+                      icon={faCircleArrowRight}
                       size="2xl"
                       style={{ color: "#ea168a" }}
                     />
@@ -401,56 +495,117 @@ const Add_data = () => {
             {/* form-3 */}
             {form3 && (
               <>
+                <center>
+                  <div className="form_header">
+                    <h3>NUTRITIONAL INFORMATION</h3>
+                  </div>
+                </center>
                 <div>
-                  {/* <label
-                    htmlFor="Nutritional ingridients"
-                    name="Nutritionalingridients"
-                  >
-                    Nutritional ingridients:
+                  <label htmlFor="calories" name="calories">
+                    calories:
                   </label>
                   <input
                     type="text"
-                    id="Nutritional ingridients"
-                    name="Nutritional ingridients"
-                    value={data.Nutritionalingridients}
-                    onChange={(e) =>
-                      get_data_teaxtbox(e, "Nutritionalingridients")
-                    }
-                  /> */}
-
-                  {/*CODE DESCRIPION / STEPS*/}
-                  <button onClick={handleAddStep}>Add Step</button>
-
-                  {steps.map((step, index) => (
-                    <div key={index}>
-                      <input
-                        type="text"
-                        name="step"
-                        value={step.description}
-                        onChange={(event) => handleStepChange(index, event)}
-                        placeholder="Step Description"
-                      />
-                    </div>
-                  ))}
-                  {/* <button
-                      className="privious_btn btn "
-                      onClick={() => {
-                        Setform2(true);
-                        Setform3(false);
-                      }}
-                    >
-                      previous
-                    </button> */}
-
-                  <input
-                    onClick={send_data_server}
-                    disabled={isLoading}
-                    className="btn btn-success"
-                    style={{ width: "660px", marginTop: "20px" }}
-                    type="submit"
-                    name="submit"
+                    id="calories"
+                    name="calories"
+                    value={data.recipe.nutrition.calories}
+                    onChange={nutrition_handler}
                   />
+
+                  <label htmlFor="fat" name="fat">
+                    fat:
+                  </label>
+                  <input
+                    type="text"
+                    id="fat"
+                    name="fat"
+                    value={data.recipe.nutrition.fat}
+                    onChange={nutrition_handler}
+                  />
+
+                  <label htmlFor="protein" name="protein">
+                    protein:
+                  </label>
+                  <input
+                    type="text"
+                    id="protein"
+                    name="protein"
+                    value={data.recipe.nutrition.protein}
+                    onChange={nutrition_handler}
+                  />
+
+                  <label htmlFor="carbohydrates" name="carbohydrates">
+                    carbohydrates:
+                  </label>
+                  <input
+                    type="text"
+                    id="carbohydrates"
+                    name="carbohydrates"
+                    value={data.recipe.nutrition.carbohydrates}
+                    onChange={nutrition_handler}
+                  />
+
+                  <button
+                    className="privious_btn btn "
+                    onClick={() => {
+                      Setform2(true);
+                      Setform3(false);
+                    }}
+                  >
+                    <FontAwesomeIcon
+                      icon={faCircleArrowLeft}
+                      size="2xl"
+                      style={{ color: "#ea168a" }}
+                    />
+                  </button>
+                  <button className="next_btn btn " onClick={form3_handler}>
+                    <FontAwesomeIcon
+                      icon={faCircleArrowRight}
+                      size="2xl"
+                      style={{ color: "#ea168a" }}
+                    />
+                  </button>
                 </div>
+              </>
+            )}
+
+            {form4 && (
+              <>
+                <center>
+                  <div className="form_header">
+                    <h3>ADD STEPS</h3>
+                  </div>
+                </center>
+                {instructions.map((instructions, index) => (
+                  <div key={index}>
+                    <input
+                      type="text"
+                      name="instruction"
+                      // value={step.description}
+                      onChange={(event) => handleStepChange(index, event)}
+                      placeholder={"Step : "+(index+1)}
+                    />
+                  </div>
+                ))}
+                <center>
+                  <div className="addbtn">
+                    <button className="btn" onClick={handleAddStep}>
+                      <FontAwesomeIcon
+                        icon={faCirclePlus}
+                        size="2xl"
+                        style={{ color: "#ea168a" }}
+                      />
+                    </button>
+                  </div>
+                </center>
+                <input
+                  onClick={send_data_server}
+                  disabled={isLoading}
+                  className="btn btn-success"
+                  style={{ width: "660px", marginTop: "20px" }}
+                  type="submit"
+                  name="submit"
+                />
               </>
             )}
             <ToastContainer />

@@ -45,11 +45,10 @@
     margin-bottom: 10px;
   }
 
-  
 .next_btn {
-  margin-left: 540px;
+  margin-left: 610px;
+  margin-top: -70px;
 }
-
 
 .privious_btn {
   margin-left: -25px;
@@ -60,18 +59,15 @@
   font-size: 60px;
   width:250px;
   align-items: center;
-   margin-left: 1030px;
-  margin-top:-250px 
+  margin-left: 1030px;
 }
 
-.ingridients{
 
-}
 
 
 /* add button for ingridients */
 .addbtn{
-
+  margin-top: 25px;
   background-color: #0b141a;
  
 }
@@ -81,13 +77,18 @@
 }
 
 .ingidients{
-  width: 30%;
+  width: 45%;
 }
 
 .measurement{
-  margin-left: 250px;
-  width:30%;
+  margin-left: 360px;
+  width:45%;
   /* background-color: white; */
   margin-top: -102px;
 
+}
+
+.form_header{
+  color:white;
+  margin-bottom: 35px;
 }

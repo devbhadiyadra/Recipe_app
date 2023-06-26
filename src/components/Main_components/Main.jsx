@@ -21,7 +21,7 @@ const Main = () => {
               />
             </Link>
           </button>
-          <button className="main_btn">
+          {/* <button className="main_btn">
             <Link to="/Getdata">
               {" "}
               <FontAwesomeIcon
@@ -30,7 +30,7 @@ const Main = () => {
                 style={{ color: "black" }}
               />
             </Link>
-          </button>
+          </button> */}
         </div>
       </div>
     </>
