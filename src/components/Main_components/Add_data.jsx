@@ -1,21 +1,24 @@
 import { useState } from "react";
+import Navbar from "./Navbar";
 import "../css files/Add-data.css";
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { FadeLoader } from "react-spinners";
-import { Alert, isMuiElement } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleArrowLeft,
   faCircleArrowRight,
   faCirclePlus,
-  
 } from "@fortawesome/free-solid-svg-icons";
- import axios from "axios";
+import axios from "axios";
 
+const URL = "http://localhost:8085";
 // BASIC DATA
 const Add_data = () => {
+  
+  var navigate = useNavigate();
+
   const [data, setData] = useState({
     recipe: {
       name: "",
@@ -41,34 +44,26 @@ const Add_data = () => {
       // Nutritionalingridients: "",
       // description: "",
       // image: "",
-    }
+    },
   });
-  const URL = "http://localhost:8085";
 
-  // CATEGORY SELECTION
-  const [selectedValue, setSelectedValue] = useState("");
-
-  // FORM ROUTE
+  //FOR FORM ROUTE
   const [form1, Setform1] = useState(true);
   const [form2, Setform2] = useState(false);
   const [form3, Setform3] = useState(false);
   const [form4, Setform4] = useState(false);
+
+   // CATEGORY SELECTION
+   const [selectedValue, setSelectedValue] = useState("");
+
   // LOADER
   const [isLoading, setIsLoading] = useState(false);
-
-  // SUCCESSFULLY DATA ADDED MESSAGE
-  const [data_added, setdata_added] = useState(false);
 
   // INGRIDIENTS LIST
   const [items, setItems] = useState([]);
 
-  // RECIPE instructions
+  // RECIPE INSTRUCTION/STEP
   const [instructions, setinstructions] = useState([]);
-
-  var navigate = useNavigate();
-
-  // IMAGE
-  // const [selectedImage, setSelectedImage] = useState(null)
 
   const get_data_teaxtbox = (e, field) => {
     var value = e.target.value;
@@ -81,59 +76,63 @@ const Add_data = () => {
         [field]: value,
       },
     }));
+   
   };
-
   const form1_handler = (e) => {
     e.preventDefault();
-
+   
     if (data.recipe.name === "") {
       toast.error("please enter recipe name", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
-      Setform1(true);
-      Setform2(false);
     }
-    // if (data.category === "baking" || "drinks" || "lunch"|| "dinner"||"snakes"||"desert"||"breakfast") {
-    //   toast.error("please select category", {
-    //     position: toast.POSITION.BOTTOM_CENTER,
-    //   });
-    //   Setform1(true);
-    //   Setform2(false);
-    // }
-    if (data.recipe.preparationTime === "") {
+    if (data.recipe.preparationTime === 0) {
       toast.error("please enter preparation time", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
-      Setform1(true);
-      Setform2(false);
     }
-    if (data.recipe.cookingTime === "") {
+    if (data.recipe.cookingTime === 0) {
       toast.error("please enter cooking time", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
-      Setform1(true);
-      Setform2(false);
+    }
+    if (
+      data.recipe.category !== "breakfast" &&
+      data.recipe.category !== "baking" &&
+      data.recipe.category !== "dinner" &&
+      data.recipe.category !== "lunch" &&
+      data.recipe.category !== "desert" &&
+      data.recipe.category !== "drinks" &&
+      data.recipe.category !== "snakes"
+    ) {
+      toast.error("please choose category", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
     }
     if (
       data.recipe.name !== "" &&
-      data.recipe.category !== "" &&
-      data.recipe.preparationTime !== "" &&
-      data.recipe.cookingTime !== ""
+      (data.recipe.category === "breakfast" ||
+        data.recipe.category === "baking" ||
+        data.recipe.category === "dinner" ||
+        data.recipe.category === "lunch" ||
+        data.recipe.category === "desert" ||
+        data.recipe.category === "drinks" ||
+        data.recipe.category === "snakes") &&
+      data.recipe.preparationTime !== 0 &&
+      data.recipe.cookingTime !== 0
     ) {
       Setform1(false);
       Setform2(true);
     }
+    
   };
-
   const form2_handler = (e) => {
     e.preventDefault();
     if (
       items.length === 0 ||
-      items.some((item) => item.name === "" || item.measurement === "")
+      items.some((item) => item.ingredient === "" || item.measurement === "")
     ) {
-      Setform2(true);
-      Setform3(false);
-      toast.error("please ADD ingredients name", {
+      toast.error("please ADD ingredients", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
     } else if (items.name !== "" && items.Measurement !== "") {
@@ -141,7 +140,6 @@ const Add_data = () => {
       Setform3(true);
     }
   };
-
   const form3_handler = (e) => {
     e.preventDefault();
     if (data.recipe.nutrition.calories === "") {
@@ -164,7 +162,6 @@ const Add_data = () => {
         position: toast.POSITION.BOTTOM_CENTER,
       });
     }
-
     if (
       data.recipe.nutrition.calories !== "" &&
       data.recipe.nutrition.fat !== "" &&
@@ -175,69 +172,6 @@ const Add_data = () => {
       Setform4(true);
     }
   };
-
-  //Function for all data sent to the backend(server)
-  const send_data_server = (e) => {
-    e.preventDefault();
-    if (
-      instructions.length === 0 ||
-      instructions.some((instructions) => instructions.instructions === "")
-    ) {
-      toast.error("please ADD recipe steps", {
-        position: toast.POSITION.BOTTOM_CENTER,
-      });
-    } else {
-      data.recipe.instructions.forEach((ins,index)=>{
-        ins.step=index+1
-      })
-      console.log("recipe basic data :", data);
-      // for loader
-      setIsLoading(true);
-      setTimeout(() => {
-        setdata_added(true);
-        // for loading disabled
-        setIsLoading(false);
-
-        // API axios/simple fetch method
-
-         axios.post(URL+"/AddRecipe", data)
-         .then((response) => {
-            // Handle successful response
-           toast.success("Data added", {
-             position: toast.POSITION.BOTTOM_CENTER,
-           });
-           setdata_added(true);
-         })
-         .catch((error) => {
-            // Handle error
-           toast.error("Failed to add data", {
-             position: toast.POSITION.BOTTOM_CENTER,
-           });
-           console.error(error);
-         })
-         .finally(() => {
-           setIsLoading(false);
-         });
-      }, 3000);
-
-      //  for navigate main page
-      setTimeout(() => {
-        navigate("/");
-      }, 5000);
-    }
-  };
-
-  // image handler
-  // const handleImageChange = (event, field) => {
-  //   const file = event.target.files[0];
-  //   const reader = new FileReader();
-  //   reader.onload = () => {
-  //     setSelectedImage(reader.result);
-  //   };
-  //   reader.readAsDataURL(file);
-  //   // only name weite "file.name"
-  //   setData({ ...data, [field]: file });
-  // };
 
   // FOR INGRIDIENTS
   const handleAddItem = (e, field) => {
@@ -255,7 +189,6 @@ const Add_data = () => {
       },
     }));
   };
-
   const handleItemChange = (index, event) => {
     event.preventDefault();
     const updatedItems = [...items];
@@ -303,11 +236,10 @@ const Add_data = () => {
       },
     }));
   };
-
   const handleStepChange = (index, event) => {
     event.preventDefault();
 
-    const updatedinstructions = [...instructions];  
+    const updatedinstructions = [...instructions];
     updatedinstructions[index][event.target.name] = event.target.value;
     setinstructions(updatedinstructions);
     setData((prevState) => ({
@@ -319,8 +251,61 @@ const Add_data = () => {
     }));
   };
 
+  //Function for all data sent to the backend(server)
+  const send_data_server = (e) => {
+    e.preventDefault();
+  
+    if (
+      instructions.length === 0 ||
+      instructions.some((instructions) => instructions.instructions === "")
+    ) {
+      toast.error("please ADD recipe steps", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+    } else {
+      data.recipe.instructions.forEach((ins, index) => {
+        ins.step = index + 1;
+      });
+      console.log("recipe basic data :", data);
+      // for loader
+      setIsLoading(true);
+      setTimeout(() => {
+        // for loading disabled
+        setIsLoading(false);
+
+        // API axios/simple fetch method
+
+        axios
+          .post(URL + "/AddRecipe", data)
+          .then((response) => {
+            // Handle successful response
+            toast.success("Data added", {
+              position: toast.POSITION.BOTTOM_CENTER,
+              autoClose:2000
+            });
+          })
+          .catch((error) => {
+            // Handle error
+            toast.error("Failed to add data", {
+              position: toast.POSITION.BOTTOM_CENTER,
+            });
+            console.error(error);
+          })
+          .finally(() => {
+            setIsLoading(false);
+          });
+      }, 3000);
+
+      //  for navigate main page
+      setTimeout(() => {
+        navigate("/");
+      }, 6000);
+    }
+  };
+
   return (
     <>
+    <Navbar/>
       <form>
         {/* <div className="header">
           <h1>
@@ -583,7 +568,7 @@ const Add_data = () => {
                       name="instruction"
                       // value={step.description}
                       onChange={(event) => handleStepChange(index, event)}
-                      placeholder={"Step : "+(index+1)}
+                      placeholder={"Step : " + (index + 1)}
                     />
                   </div>
                 ))}
@@ -619,17 +604,14 @@ const Add_data = () => {
             " "
           )}
         </div>
-        ,
-        {data_added && (
-          <div className="successmsg">
-            <Alert variant="filled" severity="success">
-              Recipe added Successfully
-            </Alert>
-          </div>
-        )}
       </form>
+      {/* <div>
+        <Main name="hii"/>
+      </div> */}
+      
     </>
   );
+  
 };
 
 export default Add_data;
