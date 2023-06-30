@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React,{useState} from 'react';
 import Navbar from "./Navbar";
 import "../css files/Add-data.css";
 import "react-toastify/dist/ReactToastify.css";
@@ -15,6 +15,7 @@ import axios from "axios";
 
 const URL = "http://localhost:8085";
 // BASIC DATA
+
 const Add_data = () => {
   
   var navigate = useNavigate();
@@ -83,17 +84,20 @@ const Add_data = () => {
    
     if (data.recipe.name === "") {
       toast.error("please enter recipe name", {
-        position: toast.POSITION.BOTTOM_CENTER,
+        position: toast.POSITION.RIGHT,
+       
       });
     }
     if (data.recipe.preparationTime === 0) {
       toast.error("please enter preparation time", {
-        position: toast.POSITION.BOTTOM_CENTER,
+        position: toast.POSITION.RIGHT,
+       
       });
     }
     if (data.recipe.cookingTime === 0) {
       toast.error("please enter cooking time", {
-        position: toast.POSITION.BOTTOM_CENTER,
+        position: toast.POSITION.RIGHT,
+       
       });
     }
     if (
@@ -106,7 +110,8 @@ const Add_data = () => {
       data.recipe.category !== "snakes"
     ) {
       toast.error("please choose category", {
-        position: toast.POSITION.BOTTOM_CENTER,
+        position: toast.POSITION.RIGHT,
+        
       });
     }
     if (
@@ -276,7 +281,7 @@ const Add_data = () => {
         // API axios/simple fetch method
 
         axios
-          .post(URL + "/AddRecipe", data)
+          .post(URL + "/recipe/AddRecipe", data)
           .then((response) => {
             // Handle successful response
             toast.success("Data added", {
