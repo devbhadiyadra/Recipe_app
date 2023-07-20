@@ -1,4 +1,4 @@
-import React,{useState} from 'react';
+import React, { useState } from "react";
 import Navbar from "./Navbar";
 import "../css files/Add-data.css";
 import "react-toastify/dist/ReactToastify.css";
@@ -12,12 +12,12 @@ import {
   faCirclePlus,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import Loader from "../basic-components/Loader";
 
 const URL = "http://localhost:8085";
 // BASIC DATA
 
 const Add_data = () => {
-  
   var navigate = useNavigate();
 
   const [data, setData] = useState({
@@ -34,16 +34,15 @@ const Add_data = () => {
       },
       cookingTime: 0,
       preparationTime: 0,
+      imageUrl: "",
       ingredientsList: [],
       instructions: [],
       nutrition: {
-        calories: " ",
-        fat: " ",
-        protein: " ",
-        carbohydrates: "  ",
+        calories: "",
+        fat: "",
+        protein: "",
+        carbohydrates: "",
       },
-      // Nutritionalingridients: "",
-      // description: "",
       // image: "",
     },
   });
@@ -54,17 +53,20 @@ const Add_data = () => {
   const [form3, Setform3] = useState(false);
   const [form4, Setform4] = useState(false);
 
-   // CATEGORY SELECTION
-   const [selectedValue, setSelectedValue] = useState("");
-
-  // LOADER
-  const [isLoading, setIsLoading] = useState(false);
+  // CATEGORY SELECTION
+  const [selectedValue, setSelectedValue] = useState("");
 
   // INGRIDIENTS LIST
   const [items, setItems] = useState([]);
 
   // RECIPE INSTRUCTION/STEP
   const [instructions, setinstructions] = useState([]);
+
+  //IMAGE
+  const [Image, setImage] = useState(null);
+
+  // IMAGE LOADER
+  const[loader,setLoader]=useState(false)
 
   const get_data_teaxtbox = (e, field) => {
     var value = e.target.value;
@@ -77,27 +79,22 @@ const Add_data = () => {
         [field]: value,
       },
     }));
-   
   };
   const form1_handler = (e) => {
     e.preventDefault();
-   
     if (data.recipe.name === "") {
       toast.error("please enter recipe name", {
         position: toast.POSITION.RIGHT,
-       
       });
     }
     if (data.recipe.preparationTime === 0) {
       toast.error("please enter preparation time", {
         position: toast.POSITION.RIGHT,
-       
       });
     }
     if (data.recipe.cookingTime === 0) {
       toast.error("please enter cooking time", {
         position: toast.POSITION.RIGHT,
-       
       });
     }
     if (
@@ -111,7 +108,6 @@ const Add_data = () => {
     ) {
       toast.error("please choose category", {
         position: toast.POSITION.RIGHT,
-        
       });
     }
     if (
@@ -129,7 +125,6 @@ const Add_data = () => {
       Setform1(false);
       Setform2(true);
     }
-    
   };
   const form2_handler = (e) => {
     e.preventDefault();
@@ -210,8 +205,8 @@ const Add_data = () => {
 
   // FOR NUTRITION DATA STORES IN MAIN STATE
   const nutrition_handler = (e) => {
-    const { name, value } = e.target;
     e.preventDefault();
+    const { name, value } = e.target;
     // var value = e.target.value;
     setData((prevData) => ({
       ...prevData,
@@ -256,13 +251,45 @@ const Add_data = () => {
     }));
   };
 
+  // IMAGE HANDLER FUNCTION
+  const Image_handler = (e, field) => {
+    e.preventDefault();
+    const image_url = new FormData();
+    image_url.append("file", Image);
+    image_url.append("upload_preset", "images_preset");
+    image_url.append("cloud_name", "dmd7zzmbv");
+    setLoader(true)
+    axios
+      .post("https://api.cloudinary.com/v1_1/dmd7zzmbv/upload", image_url)
+      .then((res) => {
+        setLoader(false)
+        const secureUrl = res.data.secure_url;
+        toast.success("Picture Uploaded", {
+          position: toast.POSITION.BOTTOM_CENTER
+        });
+        console.log(secureUrl);
+        setData((prevState) => ({
+          ...prevState,
+          recipe: {
+            ...prevState.recipe,
+            [field]: secureUrl,
+          },
+        }));
+      })
+      .catch((err) => {
+        setLoader(false)
+        toast.error("Please select an Picture !", {
+          position: toast.POSITION.BOTTOM_CENTER
+        });
+      });
+  };
+
   //Function for all data sent to the backend(server)
   const send_data_server = (e) => {
     e.preventDefault();
-  
     if (
       instructions.length === 0 ||
-      instructions.some((instructions) => instructions.instructions === "")
+      instructions.some((instructions1) => instructions1.length === 0)
     ) {
       toast.error("please ADD recipe steps", {
         position: toast.POSITION.BOTTOM_CENTER,
@@ -271,52 +298,35 @@ const Add_data = () => {
       data.recipe.instructions.forEach((ins, index) => {
         ins.step = index + 1;
       });
-      console.log("recipe basic data :", data);
-      // for loader
-      setIsLoading(true);
-      setTimeout(() => {
-        // for loading disabled
-        setIsLoading(false);
 
-        // API axios/simple fetch method
-
+      // API axios/simple fetch method
         axios
-          .post(URL + "/recipe/AddRecipe", data)
-          .then((response) => {
-            // Handle successful response
-            toast.success("Data added", {
-              position: toast.POSITION.BOTTOM_CENTER,
-              autoClose:2000
-            });
-          })
-          .catch((error) => {
-            // Handle error
-            toast.error("Failed to add data", {
-              position: toast.POSITION.BOTTOM_CENTER,
-            });
-            console.error(error);
-          })
-          .finally(() => {
-            setIsLoading(false);
+        .post(URL + "/recipe/AddRecipe", data)
+        .then((response) => {
+          toast.success("Recipe added", {
+            position: toast.POSITION.BOTTOM_CENTER,
+            autoClose: 2000,
           });
-      }, 3000);
+        })
+        .catch((error) => {
+          toast.error("Failed to add data", {
+            position: toast.POSITION.BOTTOM_CENTER,
+          });
+          console.error(error);
+        });
 
       //  for navigate main page
       setTimeout(() => {
         navigate("/");
-      }, 6000);
+      }, 4000);
+      console.log("recipe basic data :", data);
     }
   };
 
   return (
     <>
-    <Navbar/>
+      <Navbar />
       <form>
-        {/* <div className="header">
-          <h1>
-            <center>Get recipe information</center>
-          </h1>
-        </div> */}
         <div className="form-container">
           <form>
             {/* form-1 */}
@@ -375,27 +385,25 @@ const Add_data = () => {
                   <option value="baking">baking</option>
                 </select>
 
-                {/* image uploader */}
-                {/* <div>
-                  <form>
-                    <input
-                      type="file"
-                      onChange={(e) => handleImageChange(e, "image")}
-                      accept="image/*"
-                    />
-                    {selectedImage && (
-                      <div>
-                        <h3>Preview:</h3>
-                        <img
-                          src={selectedImage}
-                          alt="Selected"
-                          style={{ width: "660px" }}
-                        />
-                      </div>
-                    )}
-                  </form>
-                </div> */}
 
+                <div>
+                  <label type="text">Upload Image : </label>
+                  <input
+                    type="file"
+                    name="file"
+                    onChange={(e) => setImage(e.target.files[0])}
+                  />
+                  <button
+                  className="btn btn-primary"
+                  onClick={(e) => Image_handler(e, "imageUrl")}>
+                    UPLOAD
+                  </button>
+                </div>
+                {loader &&
+                <div style={{marginTop:"10px"}}>
+                   <Loader/>
+                </div>
+                }
                 <button
                   className="btn "
                   onClick={form1_handler}
@@ -428,7 +436,7 @@ const Add_data = () => {
                       <input
                         type="text"
                         name="ingredient"
-                        // value={item.name}
+                        value={item.ingredient}
                         onChange={(event) => handleItemChange(index, event)}
                       />
                     </div>
@@ -439,7 +447,7 @@ const Add_data = () => {
                       <input
                         type="text"
                         name="measurement"
-                        // value={item.measurement}
+                        value={item.measurement}
                         onChange={(event) => handleItemChange(index, event)}
                       />
                     </div>
@@ -460,7 +468,8 @@ const Add_data = () => {
                 <div className="twoarrows">
                   <button
                     className="privious_btn btn "
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
                       Setform1(true);
                       Setform2(false);
                     }}
@@ -537,7 +546,8 @@ const Add_data = () => {
 
                   <button
                     className="privious_btn btn "
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
                       Setform2(true);
                       Setform3(false);
                     }}
@@ -561,6 +571,7 @@ const Add_data = () => {
 
             {form4 && (
               <>
+           
                 <center>
                   <div className="form_header">
                     <h3>ADD STEPS</h3>
@@ -588,35 +599,25 @@ const Add_data = () => {
                     </button>
                   </div>
                 </center>
-                <input
+                
+                <button
                   onClick={send_data_server}
-                  disabled={isLoading}
                   className="btn btn-success"
                   style={{ width: "660px", marginTop: "20px" }}
                   type="submit"
                   name="submit"
-                />
+                >
+                  ADD
+                </button>
+          
               </>
             )}
             <ToastContainer />
           </form>
         </div>
-        ,
-        <div style={{ marginLeft: "620px", marginTop: "-330PX" }}>
-          {isLoading ? (
-            <FadeLoader color="blue" loading={true} size={50} />
-          ) : (
-            " "
-          )}
-        </div>
       </form>
-      {/* <div>
-        <Main name="hii"/>
-      </div> */}
-      
     </>
   );
-  
 };
 
 export default Add_data;

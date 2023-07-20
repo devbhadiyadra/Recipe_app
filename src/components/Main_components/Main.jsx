@@ -1,14 +1,13 @@
 import React from "react";
 import "../css files/Main.css";
 import Navbar from "./Navbar";
-import ShowList from "./ShowList";
-
+import Getdata from "./Get_data";
 const Main = () => {
   
   return (
     <>
     <Navbar/>
-    <ShowList/>
+    <Getdata/>
     </>
   );
 };

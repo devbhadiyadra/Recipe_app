@@ -1,8 +1,11 @@
 import React from "react";
 import "../css files/Navbar.css";
+import "../css files/searchbar.css"
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCirclePlus,faList} from "@fortawesome/free-solid-svg-icons";
+
+
 const Navbar = () => {
   return (
     <>
@@ -10,7 +13,8 @@ const Navbar = () => {
         <div className="recipe_name">
           <h1>Recipe</h1>
         </div>
-
+        <div>
+        </div>
         <div className="add_btn_div">
           <button style={{ border: "none", backgroundColor: "#ea168a" }}>
             <Link to="/Adddata">
